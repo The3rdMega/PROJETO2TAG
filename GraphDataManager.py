@@ -1,0 +1,125 @@
+import re
+
+import matplotlib.pyplot as plt
+import networkx as nx
+from copy import deepcopy
+
+
+def coletaDados(estado_final, alunos, projetos):
+    alunos_inscritos = set()
+    projetos_realizados = set()
+    total_alocados = 0
+    inscricoes = []
+
+    for projeto, lista in estado_final.items():
+        if lista:
+            projetos_realizados.add(projeto)
+            for nota, aluno in lista:
+                alunos_inscritos.add(aluno)
+                inscricoes.append((aluno, projeto))
+                total_alocados += 1
+
+    todos_alunos = set(alunos.keys())
+    alunos_nao_inscritos = list(todos_alunos - alunos_inscritos)
+
+    todos_projetos = set(projetos.keys())
+    projetos_vazios = list(todos_projetos - projetos_realizados)
+
+    media_alunos = total_alocados / len(projetos_realizados) if projetos_realizados else 0
+
+    tamanho_emparelhamento = sum(len(v) for v in estado_final.values())
+
+    return {
+        "num_alunos_inscritos": len(alunos_inscritos),
+        "lista_alunos_inscritos": inscricoes,
+        "num_alunos_nao_inscritos": len(alunos_nao_inscritos),
+        "lista_alunos_nao_inscritos": alunos_nao_inscritos,
+        "num_projetos_vazios": len(projetos_vazios),
+        "lista_projetos_vazios": projetos_vazios,
+        "num_projetos_realizados": len(projetos_realizados),
+        "lista_projetos_realizados": list(projetos_realizados),
+        "media_alunos_por_projeto": media_alunos,
+        "tamanho_emparelhamento": tamanho_emparelhamento
+}
+
+def desenhar_grafo(historico, alunos, projetos, showNonConnected=True):
+    for i, estado in enumerate(historico):
+        G = nx.Graph()
+
+        # Criar arestas a partir do estado atual (iterações do algoritmo)
+        edges = [(a, p) for p, lista in estado.items() for (_, a) in lista]
+
+        # Adicionar nós conforme configuração
+        if showNonConnected:
+            G.add_nodes_from(alunos.keys(), bipartite=0)
+            G.add_nodes_from(projetos.keys(), bipartite=1)
+        else:
+            conectados = set()
+            for a, p in edges:
+                conectados.add(a)
+                conectados.add(p)
+            G.add_nodes_from(conectados)
+
+        # Adicionar arestas
+        G.add_edges_from(edges)
+
+        # Layout bipartido
+        left_nodes = [n for n in G.nodes if n in alunos]
+        pos = nx.bipartite_layout(G, left_nodes)
+        # Aumenta o espaçamento horizontal e vertical
+        pos = {n: (x , y * 100) for n, (x, y) in pos.items()}
+
+
+        # Cores por tipo de nó
+        cores = ['skyblue' if n in alunos else 'lightgreen' for n in G.nodes]
+
+        # Desenhar o grafo
+        plt.figure(figsize=(12, 6))
+        nx.draw(
+            G, pos,
+            with_labels=True,
+            node_color=cores,
+            edge_color='gray',
+            node_size=1000, #Alterar caso vizualisação incerta
+            font_size=10
+        )
+        plt.title(f"Iteração {i + 1}")
+        plt.show()
+
+def ler_dados_alunos(caminho_arquivo):
+    alunos = {}
+    with open(caminho_arquivo, 'r') as f:
+        for linha in f:
+            linha = linha.strip()
+            match = match = re.match(r"\((A\d+)\):\((P\d+)(?:,\s*(P\d+))?(?:,\s*(P\d+))?\)\s*\((\d)\)", linha)
+            if match:
+                aluno_id = match.group(1)
+                preferencias = [p for p in match.group(2, 3, 4) if p]
+                nota = int(match.group(5))
+                alunos[aluno_id] = {
+                    "preferencias": preferencias,
+                    "nota": nota
+                }
+            else:
+                print(f"Linha ignorada (formato inválido): {linha}")
+    return alunos
+
+# Funcão que realiza a leitura do arquivo dadosProjetos.txt
+def ler_dados_projetos(caminho_arquivo):
+    projetos = {}
+    with open(caminho_arquivo, 'r') as f:
+        for linha in f:
+            linha = linha.strip()
+            match = re.match(r"\((P\d+),\s*(\d+),\s*(\d+)\)", linha)
+            if match:
+                projeto_id = match.group(1)
+                vagas = int(match.group(2))
+                nota_min = int(match.group(3))
+                projetos[projeto_id] = {
+                    "vagas": vagas,
+                    "nota_min": nota_min,
+                    "candidatos": []  # será usado posteriormente
+                }
+            else:
+                print(f"Linha ignorada (formato inválido): {linha}")
+    return projetos
