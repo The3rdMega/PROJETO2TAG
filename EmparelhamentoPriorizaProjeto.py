@@ -8,6 +8,7 @@ import seaborn as sns
 import pandas as pd
 
 # ---------------------- GALE-SHAPLEY: PROJECT-PROPOSING ----------------------
+
 def gale_shapley_projetos_propoem(alunos, projetos, max_iter=10):
     historico = []
 
@@ -21,31 +22,44 @@ def gale_shapley_projetos_propoem(alunos, projetos, max_iter=10):
     for p in projetos:
         projetos[p]['candidatos'].sort(key=lambda x: -x[1])
 
-    # Dicionário projeto -> lista de (nota, aluno)
+    # Inicializações
     emparelhamento = {p: [] for p in projetos}
-    alocados = {}
+    alocados = {}  # aluno -> projeto atual
 
     for it in range(max_iter):
         mudou = False
-        for p, info in projetos.items():
-            candidatos = info['candidatos']
-            vagas = info['vagas']
+        for p, info in projetos.items():    # Para cada projeto e Informação atual do projeto
+            vagas = info['vagas']   # numero de vagas do projeto
+            candidatos = info['candidatos'] # lista de candidatos possíveis para o projeto
 
-            # Pega apenas os que ainda não estão alocados
-            livres = [(a, n) for (a, n) in candidatos if a not in alocados]
-            novos = livres[:vagas - len(emparelhamento[p])]
-
-            if novos:
-                mudou = True
-                for a, n in novos:
-                    emparelhamento[p].append((n, a))
-                    alocados[a] = p
+            for a, n in candidatos: # para cada aluno e nota
+                if a in alocados:   # se o aluno já estiver alocado a outro projeto
+                    projeto_atual = alocados[a] # projeto_atual = projeto em que o aluno está alocado atualmente
+                    prefs = alunos[a]['preferencias']   # pega a lista de preferencias do aluno
+                    if prefs.index(p) < prefs.index(projeto_atual): # se o aluno prefere o projeto analisado ao seu projeto atual
+                        # Só realoca se houver vaga no novo projeto
+                        if len(emparelhamento[p]) < vagas:
+                            # Remover do projeto anterior
+                            emparelhamento[projeto_atual] = [
+                                (nota, aid) for (nota, aid) in emparelhamento[projeto_atual] if aid != a
+                            ]
+                            # Adicionar ao novo projeto
+                            emparelhamento[p].append((n, a))
+                            alocados[a] = p
+                            mudou = True
+                else:
+                    # Aluno livre
+                    if len(emparelhamento[p]) < vagas:
+                        emparelhamento[p].append((n, a))
+                        alocados[a] = p
+                        mudou = True
 
         historico.append({k: v.copy() for k, v in emparelhamento.items()})
         if not mudou:
             break
 
     return historico
+
 
 
 
