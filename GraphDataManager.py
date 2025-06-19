@@ -3,7 +3,8 @@ import re
 import matplotlib.pyplot as plt
 import networkx as nx
 from copy import deepcopy
-
+import seaborn as sns
+import pandas as pd
 
 def coletaDados(estado_final, alunos, projetos):
     alunos_inscritos = set()
@@ -153,3 +154,34 @@ def retornaIndice(alunos, projetos):
         print(f"{k}: {v:.2f}%")
     '''
     return porcentagens
+
+
+
+
+
+def geraMatriz(emparelhamento):
+    # Cria listas ordenadas
+    alunos_ids = [f'A{i}' for i in range(1, 201)]
+    projetos_ids = [f'P{i}' for i in range(1, 51)]
+
+    # Inicializa matriz como DataFrame (linhas = projetos, colunas = alunos)
+    matriz_df = pd.DataFrame(0, index=projetos_ids, columns=alunos_ids)
+
+    # Preenche a matriz com base no emparelhamento
+    for projeto, tuplas in emparelhamento.items():
+        for nota, aluno in tuplas:
+            if projeto in matriz_df.index and aluno in matriz_df.columns:
+                matriz_df.at[projeto, aluno] = 1
+
+    # Plot com seaborn
+    plt.figure(figsize=(20, 10))
+    sns.heatmap(matriz_df, cmap="Greys", cbar=False, linewidths=0.1, linecolor='lightgray')
+    plt.title("Matriz de Alocação (Projetos vs Alunos)", fontsize=16)
+    plt.xlabel("Alunos")
+    plt.ylabel("Projetos")
+    plt.xticks(rotation=90, fontsize=6)
+    plt.yticks(rotation=0, fontsize=8)
+    plt.tight_layout()
+    plt.show()
+
+

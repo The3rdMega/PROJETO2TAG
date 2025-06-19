@@ -4,6 +4,8 @@ import re
 import matplotlib.pyplot as plt
 import networkx as nx
 from copy import deepcopy
+import seaborn as sns
+import pandas as pd
 
 
 from pulp import LpProblem, LpVariable, lpSum, LpMaximize, LpBinary, PULP_CBC_CMD
@@ -115,8 +117,9 @@ def visualizacao(alunos,projetos,historico,dados, indice):
     print("1 - Coleta de Dados")
     print("2 - Desenho do Grafo")
     print("3 - Visualizar o Índice de Preferência por Projeto")
-    print("4 - Retornar a escolha de Algoritmo")
-    escolha = input("Digite 1, 2, 3 ou 4: ").strip()
+    print("4 - Visualizar a Matriz de Emparelhamento")
+    print("5 - Retornar a escolha de Algoritmo")
+    escolha = input("Digite 1, 2, 3, 4 ou 5: ").strip()
 
     if escolha == '1':
         print()
@@ -135,10 +138,15 @@ def visualizacao(alunos,projetos,historico,dados, indice):
         visualizacao(alunos,projetos,historico,dados, indice)
     elif escolha == '4':
         print()
+        print('Mostrando Matriz de Emparelhamento\n')
+        gdm.geraMatriz(historico[-1])
+        visualizacao(alunos,projetos,historico,dados, indice)
+    elif escolha == '5':
+        print()
         return
     else:
         print()
-        print("Opção inválida. Por favor, escolha 1, 2, 3 ou 4.")
+        print("Opção inválida. Por favor, escolha 1, 2, 3, 4 ou 5.")
         visualizacao(alunos,projetos,historico,dados, indice)
 
 
@@ -175,8 +183,6 @@ def main():
     historico = []
     historico.append(emparelhamento)
     dados = gdm.coletaDados(historico[-1], alunos, projetos)
-
-    
 
     visualizacao(alunos,projetos,historico,dados,indice)
 
