@@ -91,31 +91,42 @@ def realizarColeta(dados):
 def desenharGrafo(historico, alunos, projetos, showNonConnected=False):
     gdm.desenhar_grafo(historico, alunos, projetos, showNonConnected)
 
+def mostraIndice(indice):
+    print('Porcentagem de preferência por projeto')
+    print()
+    for k, v in indice.items():
+        print(f"{k}: {v:.2f}%")
 
-def visualizacao(alunos,projetos,historico,dados):
+def visualizacao(alunos,projetos,historico,dados, indice):
     print("Escolha a execução a ser feita:")
     print("1 - Coleta de Dados")
     print("2 - Desenho do Grafo")
-    print("3 - Retornar a escolha de Algoritmo")
-    escolha = input("Digite 1,2 ou 3: ").strip()
+    print("3 - Visualizar o Índice de Preferência por Projeto")
+    print("4 - Retornar a escolha de Algoritmo")
+    escolha = input("Digite 1, 2, 3 ou 4: ").strip()
 
     if escolha == '1':
         print()
         print("Mostrando Coleta de dados\n")
         realizarColeta(dados)
-        visualizacao(alunos,projetos,historico,dados)
+        visualizacao(alunos,projetos,historico,dados, indice)
     elif escolha == '2':
         print()
         print("Mostrando Grafos gerado (todas as iterações)\n")
         desenharGrafo(historico, alunos, projetos, showNonConnected=False)
-        visualizacao(alunos,projetos,historico,dados)
+        visualizacao(alunos,projetos,historico,dados, indice)
     elif escolha == '3':
         print()
-        return    
+        print("Mostrando índice de Preferência por Projeto\n")
+        mostraIndice(indice)
+        visualizacao(alunos,projetos,historico,dados, indice)
+    elif escolha == '4':
+        print()
+        return
     else:
         print()
-        print("Opção inválida. Por favor, escolha 1, 2 ou 3.")
-        visualizacao(alunos,projetos,historico,dados)
+        print("Opção inválida. Por favor, escolha 1, 2, 3 ou 4.")
+        visualizacao(alunos,projetos,historico,dados, indice)
 
 
 
@@ -123,10 +134,13 @@ def visualizacao(alunos,projetos,historico,dados):
 def main():
     alunos = gdm.ler_dados_alunos("dadosAlunos.txt")
     projetos = gdm.ler_dados_projetos("dadosProjetos.txt")
+
+    indice = gdm.retornaIndice(alunos,projetos)
+
     historico = gale_shapley_projetos_propoem(alunos, projetos, max_iter=10)
     dados = gdm.coletaDados(historico[-1], alunos, projetos)
 
-    visualizacao(alunos,projetos,historico,dados)
+    visualizacao(alunos,projetos,historico,dados, indice)
 
 
 if __name__ == "__main__":

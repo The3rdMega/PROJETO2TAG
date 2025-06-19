@@ -1,21 +1,3 @@
-"""
-Especificações do Projeto Simplificadas:
-
-Estrutura dos dados:
-Aluno: (AN):(PN1,PN2,PN3) (N)
-Onde AN é o número do aluno, PN1,PN2 e PN3 são as preferências de projeto do aluno e N é a nota dele entre 3,4,5
-
-Projeto: (PN,NV,NM)
-Onde PN é o número do projeto, NV é o número de vagas e NM é o requisito mínimo de nota do aluno
-
-
-Possível estratégia:
-Primeiro lemos o arquivo e adicionamos todos os Projetos e Alunos em dicionários. 
-Depois, adicionamos todos eles como nós em um grafo,
-Por fim, conectamos todos os nós que satisfaçam as condições:
-- Aluno tem nota suficiente para o projeto
-- Aluno tem o projeto em sua lista de preferências
-"""
 import GraphDataManager as gdm
 import re
 
@@ -24,59 +6,60 @@ import networkx as nx
 from copy import deepcopy
 
 
+from pulp import LpProblem, LpVariable, lpSum, LpMaximize, LpBinary, PULP_CBC_CMD
+def max_cardinality_stable_matching(alunos, projetos):
+    prob = LpProblem("MCSM", LpMaximize)
+    # Variáveis binárias: x[a,p] == 1 se aluno a for alocado ao projeto p
+    x = {
+        (a, p): LpVariable(f"x_{a}_{p}", cat=LpBinary)
+        for a, info in alunos.items()
+        for p in info['preferencias']
+        if p in projetos and info['nota'] >= projetos[p]['nota_min']
+    }
 
-def gale_shapley_visual(alunos, projetos, max_iter=10):
-    alunos_livres = {a for a in alunos}
-    inscricoes = {a: [] for a in alunos}
-    projeto_alocados = {p: [] for p in projetos}
-    iteracao = 0
-    historico = []
+    # 1. Cada aluno pode ter no máximo um projeto
+    for a in alunos:
+        prob += lpSum(x.get((a, p), 0) for p in alunos[a]['preferencias']) <= 1
 
-    while iteracao < max_iter:
-        houve_alocacao = False
-        for a in list(alunos_livres):
-            aluno = alunos[a]
-            prefs = aluno['preferencias']
-            nota = aluno['nota']
-            inscricoes_feitas = inscricoes[a]
+    # 2. Cada projeto tem limite de vagas
+    for p in projetos:
+        prob += lpSum(x.get((a, p), 0) for a in alunos) <= projetos[p]['vagas']
 
-            # Verificar se há algum projeto ainda não tentado
-            projetos_a_tentar = [p for p in prefs if p not in inscricoes_feitas]
-            if not projetos_a_tentar:
-                continue  # nada mais a tentar
+    # 3. Impedir pares bloqueadores
+    for a, info in alunos.items():
+        prefs = info['preferencias']
+        nota = info['nota']
+        for p in prefs:
+            if p not in projetos or nota < projetos[p]['nota_min']:
+                continue
 
-            p = projetos_a_tentar[0]
-            inscricoes[a].append(p)
-            projeto = projetos[p]
-            min_nota = projeto['nota_min']
-            vagas = projeto['vagas']
-            alocados = projeto_alocados[p]
+            # Estudante preferiria p a qualquer projeto alocado?
+            worse_projects = prefs[prefs.index(p)+1:]
 
-            if nota < min_nota:
-                continue  # não qualifica
+            # Constrói a condição de bloqueio:
+            # se aluno não está alocado, ou está com projeto pior,
+            # e projeto p tem vaga, então o par (a,p) é bloqueador — proibido.
+            lhs = x.get((a, p), 0)
+            rhs_aluno = lpSum(x.get((a, wp), 0) for wp in worse_projects)
+            rhs_proj = lpSum(x.get((a2, p), 0) for a2 in alunos)
 
-            if len(alocados) < vagas:
-                alocados.append((nota, a))
-                alunos_livres.remove(a)
-                houve_alocacao = True
+            prob += lhs + rhs_aluno + 1 <= projetos[p]['vagas'] + rhs_proj
 
-            else:
-                # Já cheio, ver se substitui alguém
-                pior_aluno = min(alocados, key=lambda x: x[0])  # menor nota
-                if nota > pior_aluno[0]:
-                    alocados.remove(pior_aluno)
-                    alocados.append((nota, a))
-                    alunos_livres.remove(a)
-                    alunos_livres.add(pior_aluno[1])
-                    houve_alocacao = True
+    # 4. Função objetivo: maximizar o número de alocações
+    prob += lpSum(x.values())
 
-        # Salvar estado do grafo atual para visualização
-        historico.append(deepcopy(projeto_alocados))
-        if not houve_alocacao:
-            break  # não houve mudanças, estável
-        iteracao += 1
+    # Resolver
+    solver = PULP_CBC_CMD(msg=False)
+    prob.solve(solver)
 
-    return historico
+    # Interpretar solução
+    emparelhamento = {}
+    for (a, p), var in x.items():
+        if var.varValue == 1:
+            emparelhamento[a] = p
+
+    return emparelhamento
+
 
 def realizarColeta(dados):
     for k, v in dados.items():
@@ -126,6 +109,7 @@ def mostraIndice(indice):
     for k, v in indice.items():
         print(f"{k}: {v:.2f}%")
 
+
 def visualizacao(alunos,projetos,historico,dados, indice):
     print("Escolha a execução a ser feita:")
     print("1 - Coleta de Dados")
@@ -158,6 +142,25 @@ def visualizacao(alunos,projetos,historico,dados, indice):
         visualizacao(alunos,projetos,historico,dados, indice)
 
 
+
+def inverter_emparelhamento(emparelhamento_aluno_projeto, alunos):
+    # Inicializa o dicionário com todos os projetos de P1 a P50
+    emparelhamento_projeto_aluno = {f'P{i}': [] for i in range(1, 51)}
+
+    # Preenche com (nota, aluno) a partir do emparelhamento original
+    for aluno_id, projeto_id in emparelhamento_aluno_projeto.items():
+        if projeto_id in emparelhamento_projeto_aluno:
+            nota = alunos[aluno_id]['nota']
+            emparelhamento_projeto_aluno[projeto_id].append((nota, aluno_id))
+        else:
+            # Para projetos fora de P1 a P50 (opcional: pode ignorar ou incluir)
+            nota = alunos[aluno_id]['nota']
+            emparelhamento_projeto_aluno.setdefault(projeto_id, []).append((nota, aluno_id))
+
+    return emparelhamento_projeto_aluno
+
+
+
 # ---------------------- MAIN ----------------------
 def main():
     # Armazenamos os daods dentro de dicionários para fácil leitura
@@ -166,15 +169,16 @@ def main():
 
     indice = gdm.retornaIndice(alunos,projetos)
 
-    #Limpa preferências inexistentes de alunos (P51+)
-    for aluno_id, dados in alunos.items():
-        dados['preferencias'] = [p for p in dados['preferencias'] if p in projetos]
+    emparelhamento = max_cardinality_stable_matching(alunos, projetos, )
+    emparelhamento = inverter_emparelhamento(emparelhamento, alunos)
 
-    historico = gale_shapley_visual(alunos, projetos, max_iter=10)
+    historico = []
+    historico.append(emparelhamento)
     dados = gdm.coletaDados(historico[-1], alunos, projetos)
 
+    
 
-    visualizacao(alunos,projetos,historico,dados, indice)
+    visualizacao(alunos,projetos,historico,dados,indice)
 
     
 

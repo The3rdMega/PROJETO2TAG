@@ -123,3 +123,33 @@ def ler_dados_projetos(caminho_arquivo):
             else:
                 print(f"Linha ignorada (formato inválido): {linha}")
     return projetos
+
+
+def retornaIndice(alunos, projetos):
+    # Inicializa o dicionário com todos os projetos de P1 a P50 com valor 0
+    indice = {f'P{i}': 0 for i in range(1, 51)}
+    totalPontos = 0
+
+    for aluno_id, info in alunos.items():
+        preferencias = info["preferencias"]
+
+        for i, projeto_id in enumerate(preferencias):  # Não há mais slicing
+            if projeto_id in projetos:
+                pontos = 3 - i  # 3 para o 1º, 2 para o 2º, 1 para o 3º
+                indice[projeto_id] += pontos
+                totalPontos += pontos
+
+    # Gera dicionário final com porcentagens
+    if totalPontos == 0:
+        print("Nenhum ponto foi computado.")
+        return
+
+    porcentagens = {
+        k: (v / totalPontos) * 100 for k, v in indice.items()
+    }
+    '''
+    # Printa o resultado
+    for k, v in porcentagens.items():
+        print(f"{k}: {v:.2f}%")
+    '''
+    return porcentagens
