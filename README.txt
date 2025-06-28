@@ -9,9 +9,9 @@ Os seguintes algoritmos são utilizados:
 
 O programa também implementa uma interface de terminal para escolha de qual algoritmo executar, bem como para leitura e visualização dos
 dados gerados após a execução, como:
-- Visualização dos Grafos das Iterações do Algoritmo
-- Visualização de Dados sobre o emparelhamento final
-- Visualização de Matriz de emparelhamento
+- Visualização das Gerações de Grafos de cada Iteração do Algoritmo
+- Visualização de Dados sobre o emparelhamento final de cada Iteração
+- Visualização de Matriz de emparelhamento de cada Iteração
 - Visualização de Índice de preferência por Projeto
 
 
@@ -22,7 +22,8 @@ O código necessita das seguintes dependências:
 3. matplotlib;
 4. deepcopy;
 5. seaborn;
-6. pandas.
+6. pandas;
+7. random.
 Caso alguma dessas dependências esteja faltando, utilize o pip para as instalar (no terminal: pip install "nome da dependencia")
 
 Para rodar o código inteiro utilize no terminal: python main.py (MANEIRA RECOMENDADA)

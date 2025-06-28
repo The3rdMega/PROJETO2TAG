@@ -84,7 +84,7 @@ def desenhar_grafo(historico, alunos, projetos, showNonConnected=True):
             node_size=1000, #Alterar caso vizualisação incerta
             font_size=10
         )
-        plt.title(f"Iteração {i + 1}")
+        plt.title(f"Geração {i + 1}")
         plt.show()
 
 def ler_dados_alunos(caminho_arquivo):

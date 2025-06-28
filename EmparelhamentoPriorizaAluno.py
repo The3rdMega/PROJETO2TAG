@@ -1,21 +1,3 @@
-"""
-Especificações do Projeto Simplificadas:
-
-Estrutura dos dados:
-Aluno: (AN):(PN1,PN2,PN3) (N)
-Onde AN é o número do aluno, PN1,PN2 e PN3 são as preferências de projeto do aluno e N é a nota dele entre 3,4,5
-
-Projeto: (PN,NV,NM)
-Onde PN é o número do projeto, NV é o número de vagas e NM é o requisito mínimo de nota do aluno
-
-
-Possível estratégia:
-Primeiro lemos o arquivo e adicionamos todos os Projetos e Alunos em dicionários. 
-Depois, adicionamos todos eles como nós em um grafo,
-Por fim, conectamos todos os nós que satisfaçam as condições:
-- Aluno tem nota suficiente para o projeto
-- Aluno tem o projeto em sua lista de preferências
-"""
 import GraphDataManager as gdm
 import re
 
@@ -128,45 +110,6 @@ def mostraIndice(indice):
         print(f"{k}: {v:.2f}%")
 
 
-'''
-def visualizacao(alunos,projetos,historico,dados, indice):
-    print("Escolha a execução a ser feita:")
-    print("1 - Coleta de Dados")
-    print("2 - Desenho do Grafo")
-    print("3 - Visualizar o Índice de Preferência por Projeto")
-    print("4 - Visualizar a Matriz de Emparelhamento")
-    print("5 - Retornar a escolha de Algoritmo")
-    escolha = input("Digite 1, 2, 3, 4 ou 5: ").strip()
-
-    if escolha == '1':
-        print()
-        print("Mostrando Coleta de dados\n")
-        realizarColeta(dados)
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '2':
-        print()
-        print("Mostrando Grafos gerado (todas as iterações)\n")
-        #desenharGrafo(historico, alunos, projetos, showNonConnected=False)
-        chooseIterationDraw(historico,alunos,projetos,showNonConnected=False)
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '3':
-        print()
-        print("Mostrando índice de Preferência por Projeto\n")
-        mostraIndice(indice)
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '4':
-        print()
-        print('Mostrando Matriz de Emparelhamento\n')
-        gdm.geraMatriz(historico[-1])
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '5':
-        print()
-        return
-    else:
-        print()
-        print("Opção inválida. Por favor, escolha 1, 2, 3, 4 ou 5.")
-        visualizacao(alunos,projetos,historico,dados, indice)
-'''
 
 def visualizacao(lista_alunos,projetos,iteracoes,lista_dados, indice):
     print("Escolha a execução a ser feita:")
@@ -205,7 +148,7 @@ def visualizacao(lista_alunos,projetos,iteracoes,lista_dados, indice):
         visualizacao(lista_alunos,projetos,iteracoes,lista_dados, indice)
     elif escolha == '4':
         print()
-        print("Escolha a iteração de 1 a 10 para desenhar o grafo:")
+        print("Escolha a iteração de 1 a 10 para desenhar a matriz:")
         iteracaoEscolhida = input()
         if not (iteracaoEscolhida.isdigit() and 0 < int(iteracaoEscolhida) <= 10):
             print("Opção inválida. Por favor, escolha um número entre 1 e 10.")

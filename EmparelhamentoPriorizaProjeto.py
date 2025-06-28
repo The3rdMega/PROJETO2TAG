@@ -7,6 +7,8 @@ from copy import deepcopy
 import seaborn as sns
 import pandas as pd
 
+import random
+
 # ---------------------- GALE-SHAPLEY: PROJECT-PROPOSING ----------------------
 
 def gale_shapley_projetos_propoem(alunos, projetos, max_iter=10):
@@ -111,44 +113,6 @@ def mostraIndice(indice):
     print()
     for k, v in indice.items():
         print(f"{k}: {v:.2f}%")
-"""
-def visualizacao(alunos,projetos,historico,dados, indice):
-    print("Escolha a execução a ser feita:")
-    print("1 - Coleta de Dados")
-    print("2 - Desenho do Grafo")
-    print("3 - Visualizar o Índice de Preferência por Projeto")
-    print("4 - Visualizar a Matriz de Emparelhamento")
-    print("5 - Retornar a escolha de Algoritmo")
-    escolha = input("Digite 1, 2, 3, 4 ou 5: ").strip()
-
-    if escolha == '1':
-        print()
-        print("Mostrando Coleta de dados\n")
-        realizarColeta(dados)
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '2':
-        print()
-        print("Mostrando Grafos gerado (todas as iterações)\n")
-        desenharGrafo(historico, alunos, projetos, showNonConnected=False)
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '3':
-        print()
-        print("Mostrando índice de Preferência por Projeto\n")
-        mostraIndice(indice)
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '4':
-        print()
-        print('Mostrando Matriz de Emparelhamento\n')
-        gdm.geraMatriz(historico[-1])
-        visualizacao(alunos,projetos,historico,dados, indice)
-    elif escolha == '5':
-        print()
-        return
-    else:
-        print()
-        print("Opção inválida. Por favor, escolha 1, 2, 3, 4 ou 5.")
-        visualizacao(alunos,projetos,historico,dados, indice)
-"""
 
 def visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice):
     print("Escolha a execução a ser feita:")
@@ -187,7 +151,7 @@ def visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice):
         visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice)
     elif escolha == '4':
         print()
-        print("Escolha a iteração de 1 a 10 para desenhar o grafo:")
+        print("Escolha a iteração de 1 a 10 para desenhar a matriz:")
         iteracaoEscolhida = input()
         if not (iteracaoEscolhida.isdigit() and 0 < int(iteracaoEscolhida) <= 10):
             print("Opção inválida. Por favor, escolha um número entre 1 e 10.")
@@ -204,26 +168,7 @@ def visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice):
         print("Opção inválida. Por favor, escolha 1, 2, 3, 4 ou 5.")
         visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice)
 
-
-
-import random
-from copy import deepcopy
-
 # ---------------------- MAIN ----------------------
-"""
-def main():
-    alunos = gdm.ler_dados_alunos("dadosAlunos.txt")
-    projetos = gdm.ler_dados_projetos("dadosProjetos.txt")
-
-    indice = gdm.retornaIndice(alunos,projetos)
-
-
-    historico = gale_shapley_projetos_propoem(alunos, projetos, max_iter=10)
-    dados = gdm.coletaDados(historico[-1], alunos, projetos)
-
-
-    visualizacao(alunos,projetos,historico,dados, indice)
-"""
 
 def main():
     # Armazenamos os daods dentro de dicionários para fácil leitura
@@ -253,7 +198,6 @@ def main():
         iteracoes_projetos.append(projetos_copy)
 
 
-    #visualizacao(alunos,projetos,historico,dados, indice)
     visualizacao(alunos, iteracoes_projetos, iteracoes,dados_iteracoes, indice)
     
 
