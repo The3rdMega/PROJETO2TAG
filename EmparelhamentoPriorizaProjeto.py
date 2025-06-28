@@ -111,7 +111,7 @@ def mostraIndice(indice):
     print()
     for k, v in indice.items():
         print(f"{k}: {v:.2f}%")
-
+"""
 def visualizacao(alunos,projetos,historico,dados, indice):
     print("Escolha a execução a ser feita:")
     print("1 - Coleta de Dados")
@@ -148,10 +148,69 @@ def visualizacao(alunos,projetos,historico,dados, indice):
         print()
         print("Opção inválida. Por favor, escolha 1, 2, 3, 4 ou 5.")
         visualizacao(alunos,projetos,historico,dados, indice)
+"""
+
+def visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice):
+    print("Escolha a execução a ser feita:")
+    print("1 - Coleta de Dados")
+    print("2 - Desenho do Grafo")
+    print("3 - Visualizar o Índice de Preferência por Projeto")
+    print("4 - Visualizar a Matriz de Emparelhamento")
+    print("5 - Retornar a escolha de Algoritmo")
+    escolha = input("Digite 1, 2, 3, 4 ou 5: ").strip()
+
+    if escolha == '1':
+        print()
+        print("Escolha a iteração de 1 a 10 para coletar os dados:")
+        iteracaoEscolhida = input()
+        if not (iteracaoEscolhida.isdigit() and 0 < int(iteracaoEscolhida) <= 10):
+            print("Opção inválida. Por favor, escolha um número entre 1 e 10.")
+            visualizacao(alunos,lista_projetos,iteracoes, lista_dados, indice)
+        print("Mostrando Coleta de dados\n")
+        realizarColeta(lista_dados[int(iteracaoEscolhida) - 1])
+        visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice)
+    elif escolha == '2':
+        print()
+        print("Escolha a iteração de 1 a 10 para desenhar o grafo:")
+        iteracaoEscolhida = input()
+        if not (iteracaoEscolhida.isdigit() and 0 < int(iteracaoEscolhida) <= 10):
+            print("Opção inválida. Por favor, escolha um número entre 1 e 10.")
+            visualizacao(alunos,lista_projetos,iteracoes, lista_dados, indice)
+        print("Mostrando Grafos gerado (todas as iterações)\n")
+        desenharGrafo(iteracoes[int(iteracaoEscolhida) - 1], alunos, lista_projetos[int(iteracaoEscolhida) - 1], showNonConnected=False)
+        #chooseIterationDraw(historico,alunos,projetos,showNonConnected=False)
+        visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice)
+    elif escolha == '3':
+        print()
+        print("Mostrando índice de Preferência por Projeto\n")
+        mostraIndice(indice)
+        visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice)
+    elif escolha == '4':
+        print()
+        print("Escolha a iteração de 1 a 10 para desenhar o grafo:")
+        iteracaoEscolhida = input()
+        if not (iteracaoEscolhida.isdigit() and 0 < int(iteracaoEscolhida) <= 10):
+            print("Opção inválida. Por favor, escolha um número entre 1 e 10.")
+            visualizacao(alunos,lista_projetos,iteracoes, lista_dados, indice)
+        print('Mostrando Matriz de Emparelhamento\n')
+        gdm.geraMatriz(iteracoes[int(iteracaoEscolhida) - 1][-1])
+
+        visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice)
+    elif escolha == '5':
+        print()
+        return
+    else:
+        print()
+        print("Opção inválida. Por favor, escolha 1, 2, 3, 4 ou 5.")
+        visualizacao(alunos,lista_projetos,iteracoes,lista_dados, indice)
 
 
+
+import random
+from copy import deepcopy
 
 # ---------------------- MAIN ----------------------
+"""
 def main():
     alunos = gdm.ler_dados_alunos("dadosAlunos.txt")
     projetos = gdm.ler_dados_projetos("dadosProjetos.txt")
@@ -164,7 +223,39 @@ def main():
 
 
     visualizacao(alunos,projetos,historico,dados, indice)
+"""
 
+def main():
+    # Armazenamos os daods dentro de dicionários para fácil leitura
+    alunos = gdm.ler_dados_alunos("dadosAlunos.txt")
+    projetos = gdm.ler_dados_projetos("dadosProjetos.txt")
+
+    indice = gdm.retornaIndice(alunos,projetos)
+
+    iteracoes = []
+    dados_iteracoes = []
+    iteracoes_projetos = []
+
+    for i in range(10):
+        projetos_copy = deepcopy(projetos)
+        for projeto in projetos_copy.values():
+            projeto['candidatos'] = []
+        
+         # Embaralhar a ordem dos projetos
+        chaves_embaralhadas = list(projetos_copy.keys())
+        random.shuffle(chaves_embaralhadas)
+        projetos_copy = {k: projetos_copy[k] for k in chaves_embaralhadas}
+
+        historico = gale_shapley_projetos_propoem(alunos, projetos_copy, max_iter=10)
+        iteracoes.append(historico)
+        dados = gdm.coletaDados(historico[-1], alunos, projetos_copy)
+        dados_iteracoes.append(dados)
+        iteracoes_projetos.append(projetos_copy)
+
+
+    #visualizacao(alunos,projetos,historico,dados, indice)
+    visualizacao(alunos, iteracoes_projetos, iteracoes,dados_iteracoes, indice)
+    
 
 if __name__ == "__main__":
     main()
