@@ -28,7 +28,7 @@ Caso alguma dessas dependências esteja faltando, utilize o pip para as instalar
 
 Para rodar o código inteiro utilize no terminal: python main.py (MANEIRA RECOMENDADA)
 
-Para a análise do código de forma separada foi utilizado o arquivo EmparelhamentoJUPYTER.ipynb (Notebook)
+Para a análise do código de forma separada foi utilizado o arquivo Emparelhamento.ipynb (Notebook)
 Foi utilizado a extensão do Jupyter no Visual Studio Code + Pacote ipyKernel
 
 Passo a Passo:
